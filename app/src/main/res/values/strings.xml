@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">智能小车</string>
+    <string name="connectCar">连接小车</string>
+    <string name="quitCar">退出连接</string>
+    <string name="company">WE微分子电子科技</string>
+    <string name="connectNewDev">配对新设备</string>
+    <string name="haveOwnDevices">当前已配对设备:</string>
+    <string name="searchDevices">搜索到设备:</string>
+    <string name="goUp">前进</string>
+    <string name="goDown">后退</string>
+    <string name="app_versionName">1.2</string>
+</resources>
