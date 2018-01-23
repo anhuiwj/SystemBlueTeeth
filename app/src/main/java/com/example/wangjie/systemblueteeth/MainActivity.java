@@ -1,15 +1,17 @@
 package com.example.wangjie.systemblueteeth;
 
+import android.app.ActionBar;
+import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 import android.text.method.ScrollingMovementMethod;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -20,12 +22,12 @@ import com.example.wangjie.systemblueteeth.util.MsgUtils;
 import com.pgyersdk.crash.PgyCrashManager;
 import com.pgyersdk.feedback.PgyFeedbackShakeManager;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends Activity {
     private TextView textView;
 
-    private Button goUp;
+    private ImageButton goUp;
 
-    private Button goDown;
+    private ImageButton goDown;
 
     private int offset;
 
@@ -37,6 +39,7 @@ public class MainActivity extends AppCompatActivity {
 
     private Button quitCar;
 
+    private ImageButton stopMove;
     private boolean ifQuit = true;//是否退出
 
     private String MSG = "请先连接蓝牙智能小车";
@@ -48,6 +51,11 @@ public class MainActivity extends AppCompatActivity {
 
         PgyCrashManager.register(this);
 
+        //自定义bar
+        ActionBar actionBar=getActionBar();
+        actionBar.setCustomView(R.layout.actionbar_title);
+        actionBar.setDisplayOptions(ActionBar.DISPLAY_SHOW_CUSTOM);
+
 
         receiver = new MyReceiver();
 
@@ -58,8 +66,10 @@ public class MainActivity extends AppCompatActivity {
         textView = (TextView) findViewById(R.id.showLog);
         textView.setMovementMethod(ScrollingMovementMethod.getInstance());
 
-        goUp = (Button) findViewById(R.id.goUp);
-        goDown = (Button) findViewById(R.id.goDown);
+        goUp = (ImageButton) findViewById(R.id.goUp);
+       // goDown = (ImageButton) findViewById(R.id.goDown);
+
+        stopMove = (ImageButton)findViewById(R.id.stopMove);
         init();
     }
     public void init(){
@@ -81,6 +91,7 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
+
 
         //监听连接小车按钮
         Button connertCar = (Button) findViewById(R.id.connectCar);
@@ -109,22 +120,22 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        goDown.setOnClickListener(new View.OnClickListener() {
+//        goDown.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                if(connnectName !=null &&
+//                        connnectName.length() >0 ){
+//                    sendCmd(CommonsUtils.FANG_XIANG,0+"",CommonsUtils.SEND_DATA);
+//                    setLogText("后退");
+//                }else {
+//                    showToast(MSG);
+//                }
+//            }
+//        });
+
+        stopMove.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(connnectName !=null &&
-                        connnectName.length() >0 ){
-                    sendCmd(CommonsUtils.FANG_XIANG,0+"",CommonsUtils.SEND_DATA);
-                    setLogText("后退");
-                }else {
-                    showToast(MSG);
-                }
-            }
-        });
-
-        goDown.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View v) {
                 if(connnectName !=null &&
                         connnectName.length() >0 ){
                     sendCmd(CommonsUtils.SHA_CHE,0+"",CommonsUtils.SEND_DATA);
@@ -132,7 +143,6 @@ public class MainActivity extends AppCompatActivity {
                 }else {
                     showToast(MSG);
                 }
-                return false;
             }
         });
 

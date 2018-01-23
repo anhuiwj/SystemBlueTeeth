@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="myAppTheme" parent="@android:style/Theme.Holo.Light">
+        <item name="android:actionBarStyle">@style/welAppTheme</item> <!--设置ActionBarStyle-->
+    </style>
+    <style name="welAppTheme" parent="@android:style/Widget.Holo.ActionBar">
+        <!--<item name="android:background">@color/colorPrimary</item>-->
+        <!--<item name="android:backgroundStacked">@color/colorPrimaryDark</item>-->
+        <item name="android:background">#242424</item>
+        <item name="android:backgroundStacked">@color/colorPrimaryDark</item>
+    </style>
+
+</resources>

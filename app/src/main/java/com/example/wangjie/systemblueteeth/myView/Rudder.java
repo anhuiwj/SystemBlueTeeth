@@ -1,6 +1,8 @@
 package com.example.wangjie.systemblueteeth.myView;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -14,7 +16,8 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceHolder.Callback;
 import android.view.SurfaceView;
 
-import com.example.wangjie.systemblueteeth.util.MathUtils;
+import com.example.wangjie.systemblueteeth.R;
+import com.example.wangjie.systemblueteeth.util.MathUtils_bak;
 
 /**
  * Created by wangjie on 2017/6/12.
@@ -26,13 +29,13 @@ public class Rudder extends SurfaceView implements Runnable,Callback{
     private Thread mThread;
     private Paint mPaint;
     private Point mRockerPosition; //摇杆位置
-    private Point  mCtrlPoint = new Point(180,180);//摇杆起始位置
+    private Point  mCtrlPoint = new Point(280,280);//摇杆起始位置
     private int    mRudderRadius = 50;//摇杆半径
-    private int    mWheelRadius = 160;//摇杆活动范围半径
+    private int    mWheelRadius = 100;//摇杆活动范围半径
     private RudderListener listener = null; //事件回调接口
     public static final int ACTION_RUDDER = 1 , ACTION_ATTACK = 2; // 1：摇杆事件 2：按钮事件（未实现）
     private static final String TAG = "BLUETEETH";
-
+    Bitmap bitmap;
     public Rudder(Context context) {
         super(context);
     }
@@ -51,6 +54,7 @@ public class Rudder extends SurfaceView implements Runnable,Callback{
         setFocusableInTouchMode(true);
         setZOrderOnTop(true);
         mHolder.setFormat(PixelFormat.TRANSPARENT);//设置背景透明
+        bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.out_cricle);
     }
 
     //设置回调接口
@@ -65,10 +69,13 @@ public class Rudder extends SurfaceView implements Runnable,Callback{
             try {
                 canvas = mHolder.lockCanvas();
                 canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);//清除屏幕
-                mPaint.setColor(Color.CYAN);
-                canvas.drawCircle(mCtrlPoint.x, mCtrlPoint.y, mWheelRadius, mPaint);//绘制范围
-                mPaint.setColor(Color.RED);
-                canvas.drawCircle(mRockerPosition.x, mRockerPosition.y, mRudderRadius, mPaint);//绘制摇杆
+//                mPaint.setColor(Color.CYAN);
+                mPaint.setColor(Color.rgb(0,0,0));
+                canvas.drawBitmap(bitmap, mCtrlPoint.x-200, mCtrlPoint.y-200, mPaint);//这里的60px是最外围的图片的半径
+                //canvas.drawCircle(mCtrlPoint.x, mCtrlPoint.y, mWheelRadius, mPaint);//绘制范围
+//                mPaint.setColor(Color.RED);
+                mPaint.setColor(Color.rgb(3,3,3));
+                canvas.drawCircle(mRockerPosition.x-20, mRockerPosition.y-20, mRudderRadius, mPaint);//绘制摇杆
             } catch (Exception e) {
                 e.printStackTrace();
             } finally {
@@ -104,7 +111,7 @@ public class Rudder extends SurfaceView implements Runnable,Callback{
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        int len = MathUtils.getLength(mCtrlPoint.x, mCtrlPoint.y, event.getX(), event.getY());
+        int len = MathUtils_bak.getLength(mCtrlPoint.x, mCtrlPoint.y, event.getX(), event.getY());
         if(event.getAction() == MotionEvent.ACTION_DOWN) {
             //如果屏幕接触点不在摇杆挥动范围内,则不处理
             if(len >mWheelRadius) {
@@ -118,7 +125,7 @@ public class Rudder extends SurfaceView implements Runnable,Callback{
 
             }else{
                 //设置摇杆位置，使其处于手指触摸方向的 摇杆活动范围边缘
-                mRockerPosition = MathUtils.getBorderPoint(mCtrlPoint, new Point((int)event.getX(), (int)event.getY()), mWheelRadius);
+                mRockerPosition = MathUtils_bak.getBorderPoint(mCtrlPoint, new Point((int)event.getX(), (int)event.getY()), mWheelRadius);
             }
 //            if(listener != null) {
 //                float radian = MathUtils.getRadian(mCtrlPoint, new Point((int)event.getX(), (int)event.getY()));
@@ -127,7 +134,7 @@ public class Rudder extends SurfaceView implements Runnable,Callback{
         }
         //如果手指离开屏幕，则摇杆返回初始位置
         if(event.getAction() == MotionEvent.ACTION_UP) {
-            float radian = MathUtils.getRadian(mCtrlPoint, new Point((int)event.getX(), (int)event.getY()));
+            float radian = MathUtils_bak.getRadian(mCtrlPoint, new Point((int)event.getX(), (int)event.getY()));
 
             if(listener != null) {
                 listener.onSteeringWheelChanged(ACTION_RUDDER,Rudder.this.getAngleCouvert(radian));
