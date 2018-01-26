@@ -24,6 +24,7 @@ import android.widget.Toast;
 
 import com.example.wangjie.systemblueteeth.db.DatabaseHelper;
 import com.example.wangjie.systemblueteeth.entity.BlueTooThDevice;
+import com.example.wangjie.systemblueteeth.myView.LoadingDialog;
 import com.example.wangjie.systemblueteeth.service.BlueTeethService;
 import com.example.wangjie.systemblueteeth.util.CommonsUtils;
 
@@ -52,6 +53,8 @@ public class BlueTeethActivity extends Activity {
     private Button button;
 
     private DatabaseHelper databaseHelper = null;
+
+    private LoadingDialog loadingDialog = null;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -70,6 +73,8 @@ public class BlueTeethActivity extends Activity {
         IntentFilter filter=new IntentFilter();
         filter.addAction("android.intent.action.lxx");
         BlueTeethActivity.this.registerReceiver(receiver,filter);
+
+        loadingDialog = new LoadingDialog(this);
 
 //        myStartService();
 //        listView.setAdapter(new ListViewAdapter(mBtDevices));
@@ -105,9 +110,16 @@ public class BlueTeethActivity extends Activity {
         builder.setPositiveButton("确认", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
+                loadingDialog.setMessage("正在连接.....").show();
                 BlueTooThDevice blueTooThDevice = null;
                 if(devices!=null && devices.size()>0){
                     blueTooThDevice = devices.get(position);
+                }
+
+                try {
+                    sendCmd(CommonsUtils.STOP_SERVICE,"");//先关闭上个连接
+                }catch (NullPointerException e){
+                    Log.e("BlueTeeth",e.toString());
                 }
 
                 connectName = blueTooThDevice.getName();
@@ -143,7 +155,6 @@ public class BlueTeethActivity extends Activity {
         if(receiver!=null){
             BlueTeethActivity.this.unregisterReceiver(receiver);
         }
-
         //sendCmd(CommonsUtils.STOP_SERVICE,"");
     }
 
@@ -245,6 +256,8 @@ public class BlueTeethActivity extends Activity {
 
                 if(cmd == CommonsUtils.CONNET_ERROR){
                     connectName = "";
+                    loadingDialog.dismiss();
+                    showToast("连接失败，请检查设备蓝牙是否开启！");
                 }
             }
         }

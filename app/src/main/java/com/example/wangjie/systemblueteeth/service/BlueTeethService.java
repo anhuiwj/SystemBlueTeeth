@@ -160,6 +160,8 @@ public class BlueTeethService extends Service {
                 showToast("连接失败");
                 DisplayToast("连接没有建立，无法关闭套接字！");
             }
+
+            sendCmd(CommonsUtils.CONNET_ERROR,"");
         }
 
         if(bluetoothFlag){
@@ -221,7 +223,8 @@ public class BlueTeethService extends Service {
     }
 
     public void stopService(){
-        if(btSocket == null){
+        if(btSocket == null
+                || outStream == null || outStream == null ){
             return;
         }
 
