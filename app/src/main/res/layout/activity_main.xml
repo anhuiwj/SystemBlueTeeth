@@ -47,26 +47,6 @@
         android:scaleType="fitCenter"
         android:background="@color/transparent_color"/>
 
-    <TableLayout
-        android:id="@+id/controller"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignTop="@+id/rudder"
-        android:layout_toEndOf="@+id/showLog"
-        android:layout_below="@+id/quitCar">
-
-    </TableLayout>
-
-    <Button
-        android:id="@+id/quitCar"
-        android:text="@string/quitCar"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignBaseline="@+id/showLog"
-        android:layout_alignBottom="@+id/showLog"
-        android:layout_alignParentEnd="true"
-        android:layout_marginEnd="9dp" />
-
 
     <ImageButton
         android:id="@+id/goDown"
@@ -75,9 +55,9 @@
         android:src="@drawable/move_down"
         android:scaleType="fitCenter"
         android:contentDescription="@null"
-        android:background="@color/transparent_color"
         android:layout_alignParentBottom="true"
-        android:layout_toEndOf="@+id/showLog" />
+        android:layout_toEndOf="@+id/showLog"
+        android:background="@color/transparent_color"/>
 
     <ImageButton
         android:id="@+id/goUp"
@@ -88,6 +68,17 @@
         android:scaleType="fitCenter"
         android:layout_above="@+id/goDown"
         android:layout_toEndOf="@+id/showLog" />
+
+    <ImageButton
+        android:id="@+id/quitCar"
+        android:text="@string/quitCar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:scaleType="fitCenter"
+        android:src="@drawable/quit_connect"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
+        android:background="@color/transparent_color"/>
 
 
 </RelativeLayout>

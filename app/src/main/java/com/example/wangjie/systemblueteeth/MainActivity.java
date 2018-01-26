@@ -6,6 +6,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.text.method.ScrollingMovementMethod;
 import android.view.MotionEvent;
@@ -15,12 +16,14 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.wangjie.systemblueteeth.db.DatabaseHelper;
 import com.example.wangjie.systemblueteeth.myView.Rudder;
 import com.example.wangjie.systemblueteeth.util.CommonsUtils;
 import com.example.wangjie.systemblueteeth.util.DateUtils;
 import com.example.wangjie.systemblueteeth.util.MsgUtils;
 import com.pgyersdk.crash.PgyCrashManager;
 import com.pgyersdk.feedback.PgyFeedbackShakeManager;
+import com.pgyersdk.update.PgyUpdateManager;
 
 public class MainActivity extends Activity {
     private TextView textView;
@@ -37,25 +40,27 @@ public class MainActivity extends Activity {
 
     private MyReceiver receiver;
 
-    private Button quitCar;
+    private ImageButton quitCar;
 
     private ImageButton stopMove;
-    private boolean ifQuit = true;//是否退出
 
     private String MSG = "请先连接蓝牙智能小车";
+
+    private DatabaseHelper databaseHelper = null;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        PgyCrashManager.register(this);
+        PgyUpdateManager.setIsForced(true); //设置是否强制更新。true为强制更新；false为不强制更新（默认值）。
+        PgyUpdateManager.register(this);
 
         //自定义bar
         ActionBar actionBar=getActionBar();
         actionBar.setCustomView(R.layout.actionbar_title);
         actionBar.setDisplayOptions(ActionBar.DISPLAY_SHOW_CUSTOM);
-
 
         receiver = new MyReceiver();
 
@@ -63,13 +68,22 @@ public class MainActivity extends Activity {
         filter.addAction("android.intent.action.main");
         MainActivity.this.registerReceiver(receiver,filter);
 
+
         textView = (TextView) findViewById(R.id.showLog);
         textView.setMovementMethod(ScrollingMovementMethod.getInstance());
 
         goUp = (ImageButton) findViewById(R.id.goUp);
-       // goDown = (ImageButton) findViewById(R.id.goDown);
+        goDown = (ImageButton) findViewById(R.id.goDown);
 
         stopMove = (ImageButton)findViewById(R.id.stopMove);
+
+        AppApplication context = (AppApplication)this.getApplicationContext();
+        databaseHelper = context.getDatabaseHelper();
+
+        databaseHelper.deleteAll();
+
+        hasConnected();
+
         init();
     }
     public void init(){
@@ -83,7 +97,9 @@ public class MainActivity extends Activity {
                     if(connnectName !=null &&
                             connnectName.length() >0 ){
                         sendCmd(CommonsUtils.FANG_XIANG,angle+"",CommonsUtils.SEND_DATA);
-                        setLogText("转向："+angle);
+
+                        databaseHelper.insertLog("转向"+angle,connectNewName,DateUtils.getDate());
+                        showLogText();
                     }else {
                         showToast(MSG);
                     }
@@ -98,12 +114,8 @@ public class MainActivity extends Activity {
         connertCar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(ifQuit){
-                    Intent intent = new Intent(getApplicationContext(),BlueTeethActivity.class);
-                    startActivityForResult(intent,1);
-                }else {
-                    showToast("请先退出当前连接");
-                }
+                Intent intent = new Intent(getApplicationContext(),BlueTeethActivity.class);
+                startActivityForResult(intent,1);
             }
         });
 
@@ -113,25 +125,29 @@ public class MainActivity extends Activity {
                 if(connnectName !=null &&
                         connnectName.length() >0 ){
                     sendCmd(CommonsUtils.FANG_XIANG,0+"",CommonsUtils.SEND_DATA);
-                    setLogText("前进");
+                    //setLogText("前进");
+                    databaseHelper.insertLog("前进",connectNewName,DateUtils.getDate());
+                    showLogText();
                 }else {
                     showToast(MSG);
                 }
             }
         });
 
-//        goDown.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                if(connnectName !=null &&
-//                        connnectName.length() >0 ){
-//                    sendCmd(CommonsUtils.FANG_XIANG,0+"",CommonsUtils.SEND_DATA);
-//                    setLogText("后退");
-//                }else {
-//                    showToast(MSG);
-//                }
-//            }
-//        });
+        goDown.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(connnectName !=null &&
+                        connnectName.length() >0 ){
+                    sendCmd(CommonsUtils.FANG_XIANG,0+"",CommonsUtils.SEND_DATA);
+                    //setLogText("后退");
+                    databaseHelper.insertLog("后退",connectNewName,DateUtils.getDate());
+                    showLogText();
+                }else {
+                    showToast(MSG);
+                }
+            }
+        });
 
         stopMove.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -139,19 +155,22 @@ public class MainActivity extends Activity {
                 if(connnectName !=null &&
                         connnectName.length() >0 ){
                     sendCmd(CommonsUtils.SHA_CHE,0+"",CommonsUtils.SEND_DATA);
-                    setLogText("刹车");
+                    //setLogText("刹车");
+                    databaseHelper.insertLog("刹车",connectNewName,DateUtils.getDate());
+                    showLogText();
                 }else {
                     showToast(MSG);
                 }
             }
         });
 
-        quitCar = (Button) findViewById(R.id.quitCar);
+        quitCar = (ImageButton) findViewById(R.id.quitCar);
         quitCar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 sendCmd(CommonsUtils.STOP_SERVICE,"");//先关闭上个连接
-                ifQuit = true;
+                databaseHelper.deleteAll();
+                System.exit(0);
             }
         });
     }
@@ -174,11 +193,20 @@ public class MainActivity extends Activity {
 
     }
 
+    //获取连接设备名称
+    public Boolean hasConnected(){
+        connnectName = databaseHelper.getConnectName();
+        if(connnectName != null){
+            return true;
+        }
+        return false;
+    }
+
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode,Intent data){
         super.onActivityResult(requestCode, resultCode, data);
-        switch (requestCode){
+        switch (resultCode){
             case 1:
                 Bundle bunde = data.getExtras();
                 connectNewName = bunde.getString("connectName");
@@ -188,12 +216,16 @@ public class MainActivity extends Activity {
 
                     connnectName =  connectNewName;
 
-                    setLogText(connnectName);
-
-                    ifQuit = false;
+                    databaseHelper.insertConnectInfo(connectNewName);
+                    databaseHelper.insertLog("连接小车："+connectNewName,connectNewName,DateUtils.getDate());
+                    showLogText();
                 }else{
                     connnectName  = null;
                 }
+                break;
+            case 2:
+                connnectName = databaseHelper.getConnectName();
+                showLogText();
                 break;
             default:
                 break;
@@ -207,6 +239,8 @@ public class MainActivity extends Activity {
         PgyFeedbackShakeManager.unregister();
 
         sendCmd(null,null,CommonsUtils.STOP_SERVICE);
+
+        databaseHelper.deleteAll();
 
         super.onDestroy();
     }
@@ -238,10 +272,10 @@ public class MainActivity extends Activity {
 
     /**
      * 动态设置TEXTVIEW值
-     * @param value
      */
-    public void setLogText(String value){
-        textView.append(DateUtils.getDate()+" "+value+"\n");
+    public void showLogText(){
+        textView.setText(null);
+        textView.setText(databaseHelper.getAll(null,"time"));
         offset=textView.getLineCount()*textView.getLineHeight();
         if(offset>textView.getHeight()){
             textView.scrollTo(0,offset-textView.getHeight());

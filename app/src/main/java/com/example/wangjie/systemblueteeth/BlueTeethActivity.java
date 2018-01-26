@@ -1,8 +1,11 @@
 package com.example.wangjie.systemblueteeth;
 
+import android.app.ActionBar;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
@@ -19,6 +22,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.wangjie.systemblueteeth.db.DatabaseHelper;
 import com.example.wangjie.systemblueteeth.entity.BlueTooThDevice;
 import com.example.wangjie.systemblueteeth.service.BlueTeethService;
 import com.example.wangjie.systemblueteeth.util.CommonsUtils;
@@ -46,10 +50,18 @@ public class BlueTeethActivity extends Activity {
     private MyReceiver receiver;
 
     private Button button;
+
+    private DatabaseHelper databaseHelper = null;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.blue_teeth_list);
+
+        //自定义bar
+        ActionBar actionBar=getActionBar();
+        actionBar.setCustomView(R.layout.search_activity_bar);
+        actionBar.setDisplayOptions(ActionBar.DISPLAY_SHOW_CUSTOM);
 
         listView = (ListView)this.findViewById(R.id.list);
         button = (Button) this.findViewById(R.id.connectNew);
@@ -62,6 +74,9 @@ public class BlueTeethActivity extends Activity {
 //        myStartService();
 //        listView.setAdapter(new ListViewAdapter(mBtDevices));
 
+        AppApplication context = (AppApplication)this.getApplicationContext();
+        databaseHelper = context.getDatabaseHelper();
+
         intent = new Intent(BlueTeethActivity.this,BlueTeethService.class);
         startService(intent);
 
@@ -69,14 +84,7 @@ public class BlueTeethActivity extends Activity {
         //处理Item的点击事件
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener(){
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                BlueTooThDevice blueTooThDevice = null;
-                if(devices!=null && devices.size()>0){
-                    blueTooThDevice = devices.get(position);
-                }
-
-                connectName = blueTooThDevice.getName();
-
-                sendCmd(CommonsUtils.CONNECT_DEVICE,blueTooThDevice.getAddress());
+                createAlertDialog(position);
             }
         });
 
@@ -90,16 +98,39 @@ public class BlueTeethActivity extends Activity {
         Log.i("BLUETEETH","onstart");
     }
 
+    //AlertDialog对话框
+    public void createAlertDialog(final int position){
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage("是否连接该设备？");
+        builder.setPositiveButton("确认", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                BlueTooThDevice blueTooThDevice = null;
+                if(devices!=null && devices.size()>0){
+                    blueTooThDevice = devices.get(position);
+                }
+
+                connectName = blueTooThDevice.getName();
+                databaseHelper.deleteAll();
+                sendCmd(CommonsUtils.CONNECT_DEVICE,blueTooThDevice.getAddress());
+            }
+        });
+        builder.setNegativeButton("取消", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                Toast.makeText(getApplicationContext(), "取消成功", Toast.LENGTH_SHORT).show();
+            }
+        });
+        builder.create().show();
+    }
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event){
         if(keyCode == KeyEvent.KEYCODE_BACK){
             Intent myIntent = new Intent();
             myIntent.setClass(getApplicationContext(),MainActivity.class);
-            Bundle bundle = new Bundle();
-            bundle.putString("connectName",connectName);
-            myIntent.putExtras(bundle);
-            startActivityForResult(myIntent,1);
+            this.setResult(2, myIntent);
+            this.finish();
         }
         return super.onKeyDown(keyCode, event);
     }
@@ -143,7 +174,7 @@ public class BlueTeethActivity extends Activity {
                 for(int i=0;i<devices.size();i++){
                     bluetoothDevice = devices.get(i);
                     itemViews[i]=makeItemView(
-                            bluetoothDevice.getName(),bluetoothDevice.getAddress()
+                            bluetoothDevice.getName(),bluetoothDevice.getAddress(),bluetoothDevice.getConnect_status()
                     );
                 }
             }
@@ -162,7 +193,7 @@ public class BlueTeethActivity extends Activity {
         }
 
         //绘制Item的函数
-        private View makeItemView(String strTitle, String strText) {
+        private View makeItemView(String strTitle, String strText,String connectStatus) {
             LayoutInflater inflater = (LayoutInflater) BlueTeethActivity.this
                     .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
@@ -174,6 +205,8 @@ public class BlueTeethActivity extends Activity {
             title.setText(strTitle);    //填入相应的值
             TextView text = (TextView) itemView.findViewById(R.id.blueTeethAddress);
             text.setText(strText);
+            TextView statues = (TextView) itemView.findViewById(R.id.connect_status);
+            statues.setText(connectStatus);
 
 
             return itemView;
@@ -197,7 +230,7 @@ public class BlueTeethActivity extends Activity {
 
 
                 if(cmd == CommonsUtils.SET_DEVICES){
-                    devices = (List<BlueTooThDevice>)bundle.getSerializable("devices");
+                    devices = handle(bundle);
                     listView.setAdapter(new ListViewAdapter(devices));
                 }
 
@@ -211,7 +244,7 @@ public class BlueTeethActivity extends Activity {
                 }
 
                 if(cmd == CommonsUtils.CONNET_ERROR){
-                    connectName = null;
+                    connectName = "";
                 }
             }
         }
@@ -239,5 +272,21 @@ public class BlueTeethActivity extends Activity {
         myIntent.putExtras(bundle);
         this.setResult(1, myIntent);
         this.finish();
+    }
+
+    public List<BlueTooThDevice> handle(Bundle bundle){
+        List<BlueTooThDevice>  devicesList = new ArrayList<BlueTooThDevice>();
+        devicesList = (List<BlueTooThDevice>)bundle.getSerializable("devices");
+        for(int i=0;i<devicesList.size();i++){
+            BlueTooThDevice d = devicesList.get(i);
+            connectName = databaseHelper.getConnectName();
+            if(connectName !=null
+                    && connectName.equals(d.getName())){
+                d.setConnect_status("已连接");
+            }else {
+                d.setConnect_status("未连接");
+            }
+        }
+        return devicesList;
     }
 }

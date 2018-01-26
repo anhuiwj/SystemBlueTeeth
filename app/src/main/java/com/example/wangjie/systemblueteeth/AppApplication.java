@@ -5,6 +5,7 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.util.Log;
 
+import com.example.wangjie.systemblueteeth.db.DatabaseHelper;
 import com.pgyersdk.crash.PgyCrashManager;
 import com.taobao.sophix.PatchStatus;
 import com.taobao.sophix.SophixManager;
@@ -17,6 +18,8 @@ import static com.ta.utdid2.b.a.j.TAG;
  */
 
 public class AppApplication extends Application {
+
+    public DatabaseHelper databaseHelper = null;
 
     @Override
     public void onCreate() {
@@ -47,10 +50,12 @@ public class AppApplication extends Application {
                 }).initialize();
         SophixManager.getInstance().queryAndLoadNewPatch();
 
+        PgyCrashManager.register(this);//蒲公英sdk注册
+
+        //加载数据库
+        databaseHelper = new DatabaseHelper(this);
 
         super.onCreate();
-
-        PgyCrashManager.register(this);//蒲公英sdk注册
     }
 
     /**
@@ -71,4 +76,7 @@ public class AppApplication extends Application {
         return 0;
     }
 
+    public DatabaseHelper getDatabaseHelper() {
+        return databaseHelper;
+    }
 }

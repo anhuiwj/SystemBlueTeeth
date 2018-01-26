@@ -39,7 +39,7 @@
         </activity>
 
         <activity android:name="com.pgyersdk.activity.FeedbackActivity"/>
-        <activity android:name=".BlueTeethActivity" />
+        <activity android:name=".BlueTeethActivity"/>
         <service android:name=".service.BlueTeethService"/>
 
         <meta-data

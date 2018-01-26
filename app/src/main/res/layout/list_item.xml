@@ -1,21 +1,67 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:layout_width="match_parent"
-    android:layout_height="match_parent">
-    <LinearLayout android:orientation="vertical"
-        android:layout_width="wrap_content"
-        android:layout_height="55dp">
-        <TextView android:id="@+id/blueTeethName"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textColor="#171717"
-            android:textSize="18sp"/>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingTop="20dp">
 
-        <TextView android:id="@+id/blueTeethAddress"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textColor="#171717"
-            android:textSize="13sp"
-            android:layout_toRightOf="@id/blueTeethName" />
-    </LinearLayout>
-</LinearLayout>
+    <!--<LinearLayout android:orientation="vertical"-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content">-->
+        <!--<TextView android:id="@+id/blueTeethName"-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:textColor="#171717"-->
+            <!--android:textSize="18sp"/>-->
+
+        <!--<TextView android:id="@+id/blueTeethAddress"-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:textColor="#171717"-->
+            <!--android:textSize="13sp"-->
+            <!--android:layout_toRightOf="@id/blueTeethName" />-->
+
+        <!--<TextView android:id="@+id/connect_status"-->
+            <!--android:layout_below="@+id/blueTeethName"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:textColor="#171717"-->
+            <!--android:textSize="13sp"-->
+            <!--android:layout_width="wrap_content" />-->
+    <!--</LinearLayout>-->
+    <TextView
+        android:id="@+id/blueTeethName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:singleLine="true"
+        android:text="Android新技能"
+        android:textColor="#444"
+        android:textSize="16sp" />
+
+    <TextView
+        android:id="@+id/blueTeethAddress"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/blueTeethName"
+        android:layout_marginTop="5dp"
+        android:maxLines="2"
+        android:minLines="1"
+        android:text="Android为ListView和GridView打造万能适配器"
+        android:textColor="#898989"
+        android:textSize="16sp" />
+
+
+
+    <TextView
+        android:padding="2dp"
+        android:id="@+id/connect_status"
+        android:gravity="center"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/blueTeethName"
+        android:text="10086"
+        android:textColor="#444"
+        android:textSize="15dp"
+        android:drawablePadding="5dp"
+        android:layout_marginRight="20dp"
+        android:layout_alignParentRight="true" />
+</RelativeLayout>

@@ -3,22 +3,23 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical">
     <TextView
-        android:id="@+id/textView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
-        android:text="@string/company"
+        android:text="@string/connectCar"
         android:textSize="20sp"
         android:textColor="@color/colorTopTitle"/>
 
     <Button
-        android:id="@+id/connectCar"
+        android:id="@+id/connectNew"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:paddingTop="5dp"
-        android:text="@string/connectCar"
+        android:text="@string/connectNewDev"
         android:textColor="#FFFFF0"
-        android:drawableLeft="@drawable/back_button"
-        android:background="@color/transparent_color"/>
+        android:textSize="15sp"
+        android:drawableRight="@drawable/connect_new"
+        android:background="@color/transparent_color"
+        android:layout_alignParentEnd="true"
+        android:layout_marginBottom="208dp" />
 
 </RelativeLayout>
